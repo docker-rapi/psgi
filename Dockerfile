@@ -15,7 +15,10 @@ EXPOSE 5000
 
 COPY prepare_and_plackup.pl /
 
+# Alias/symlink to allow calling different commands using `docker run ...`
+RUN ln -sf /prepare_and_plackup.pl /bin/via-git
+
 # env flag used by CMD script to prevent running except from here
 ENV RAPI_PSGI_DOCKERIZED 1
 
-CMD perl /prepare_and_plackup.pl
+CMD /prepare_and_plackup.pl
