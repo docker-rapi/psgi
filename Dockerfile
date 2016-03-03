@@ -12,4 +12,7 @@ VOLUME       /opt/app
 WORKDIR      /opt/app
 
 EXPOSE 5000
-CMD start_server --port=5000 -- plackup -s Gazelle
+
+COPY prepare_and_plackup.pl /
+
+CMD perl /prepare_and_plackup.pl
