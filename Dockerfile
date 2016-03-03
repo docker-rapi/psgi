@@ -15,4 +15,7 @@ EXPOSE 5000
 
 COPY prepare_and_plackup.pl /
 
+# env flag used by CMD script to prevent running except from here
+ENV RAPI_PSGI_DOCKERIZED 1
+
 CMD perl /prepare_and_plackup.pl
