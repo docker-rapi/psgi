@@ -1,4 +1,4 @@
-FROM rapi/rapidapp:1.1005
+FROM rapi/rapidapp:1.1006
 MAINTAINER Henry Van Styn <vanstyn@cpan.org>
 
 # Install some misc useful Plack packages:
@@ -11,6 +11,12 @@ RUN mkdir -p /opt/app
 VOLUME       /opt/app
 WORKDIR      /opt/app
 
+# Extra mountable directory for misc/dev use
+RUN mkdir -p /opt/misc
+VOLUME       /opt/misc
+
+EXPOSE 3000
+EXPOSE 3500
 EXPOSE 5000
 
 COPY prepare_and_plackup.pl /
