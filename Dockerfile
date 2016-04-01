@@ -1,4 +1,4 @@
-FROM rapi/rapidapp:1.1006-A
+FROM rapi/rapidapp:1.1007
 MAINTAINER Henry Van Styn <vanstyn@cpan.org>
 
 # Install some misc useful Plack packages:
