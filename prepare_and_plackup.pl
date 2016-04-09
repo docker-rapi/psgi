@@ -38,7 +38,8 @@ if(-f 'cpanfile') {
   print "  -> `$cmd`\n\n";
   qx|$cmd 1>&2|;
   if(my $exit = $? >> 8) {
-    die "\nError: command `$cmd` non-zero exit code ($exit) -- bailing out.\n";
+    print "\nError: command `$cmd` non-zero exit code ($exit) -- bailing out to shell...\n";
+    exec('/bin/bash');
   }
 }
 
