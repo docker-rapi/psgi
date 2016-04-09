@@ -32,9 +32,11 @@ if(! -f 'app.psgi') {
 }
 
 # If cpanfile is found, try to install missing deps before plackup:
-if(-f 'cpanfile') {
+if(-f 'cpanfile' && !$ENV{RAPI_PSGI_IGNORE_CPANFILE}) {
   print "\n** Processing cpanfile:";
-  my $cmd = 'cpanm --installdeps .';
+  my $cmd = $ENV{RAPI_PSGI_CPAN_NOTEST} 
+    ? 'cpanm -n --installdeps .'
+    : 'cpanm --installdeps .';
   print "  -> `$cmd`\n\n";
   qx|$cmd 1>&2|;
   if(my $exit = $? >> 8) {

@@ -4,7 +4,9 @@ This docker image can be used to run a PSGI application contained
 within a real directory on the host system that contains an 
 ```app.psgi``` file. The image has perl and RapidApp pre-installed, 
 but will install any other/additional required packages from CPAN 
-at runtime if a ```cpanfile``` is present in the app directory.
+at runtime if a ```cpanfile``` is present in the app directory 
+(note this can be tweaked and turned off; see Environment Variables
+section below).
 
 ## Using this image:
 
@@ -47,3 +49,15 @@ git clone --recursive https://github.com/RapidApp/yn2015
 cd yn2015/
 docker run --rm --volume=$(pwd):/opt/app -it -p 5000:5000 rapi/psgi
 ```
+
+## Environment Variables
+
+### RAPI_PSGI_IGNORE_CPANFILE
+
+Set ```RAPI_PSGI_IGNORE_CPANFILE``` to true to ignore the 
+```cpanfile``` if it exists
+
+### RAPI_PSGI_CPAN_NOTEST
+
+Set ```RAPI_PSGI_CPAN_NOTEST``` to true to install CPAN packages with
+```cpanm -n``` to skip running tests when processing the ```cpanfile```
