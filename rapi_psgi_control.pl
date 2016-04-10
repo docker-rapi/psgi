@@ -71,15 +71,6 @@ elsif($bin_name eq 'stop-app') {
 
 if($bin_name eq 'init-stopped') {
   die "$bin_name cannot be ran in an existing container" if (-f $init_file);
-  
-  my $name = $ENV{HOSTNAME} || 'some-name';
-  
-  print join("\n",'','',
-    " ** container has been started, but the app has not **",'',
-    "run 'app-restart' with docker exec from the host to start the app...",
-    "for example, if you started this container with '--name $name' - run:",'','',
-    "   docker exec $name app-restart",'',''
-  );
   $stop_file->touch;
 }
 else {
@@ -112,6 +103,18 @@ if(-f 'cpanfile' && !$ENV{RAPI_PSGI_IGNORE_CPANFILE}) {
 $ENV{RAPI_PSGI_PORT} ||= 5000;
 $ENV{RAPI_PSGI_START_SERVER_COMMAND} ||= 'plackup -s Gazelle';
 my @server_cmd = split(/\s+/,$ENV{RAPI_PSGI_START_SERVER_COMMAND});
+
+
+if($bin_name eq 'init-stopped' && -f $stop_file) {
+  my $name = $ENV{HOSTNAME} || 'some-name';
+  
+  print join("\n",'','',
+    " ** container has been started, but the app has not **",'',
+    "run 'app-restart' with docker exec from the host to start the app...",
+    "for example, if you started this container with '--name $name' - run:",'','',
+    "   docker exec $name app-restart",'',''
+  );
+}
 
 while(1) {
 
