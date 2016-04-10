@@ -17,8 +17,8 @@ options which you can override if needed (see *Environment Variables* section be
 cd /path/to/psgi/app/
 docker run --name=my-app --volume=$(pwd):/opt/app -it -p 5000:5000 rapi/psgi
 ```
-  
-  
+&nbsp;
+
 ### running an app directly from a git repo
 
 You can also run an app on-the-fly from a remote repository. This 
@@ -30,7 +30,7 @@ valid repository URL argument. For example:
 docker run --rm -it -p 5000:5000 rapi/psgi \
  via-git https://github.com/RapidApp/yn2015
 ```
-  
+&nbsp;
   
 This mode simply clones the repo to ```/opt/app``` to start. The above 
 example does not mount an external path on the volume, so the app
@@ -44,7 +44,7 @@ cd yn2015/
 docker run --rm --volume=$(pwd):/opt/app -it -p 5000:5000 rapi/psgi \
  via-git https://github.com/RapidApp/yn2015
 ```
-  
+&nbsp;
   
 The above is roughly equivalent to this:
 
@@ -53,7 +53,7 @@ git clone --recursive https://github.com/RapidApp/yn2015
 cd yn2015/
 docker run --rm --volume=$(pwd):/opt/app -it -p 5000:5000 rapi/psgi
 ```
-  
+&nbsp;
   
 ### running as a daemon
 
@@ -77,7 +77,7 @@ docker start my-cool-app
 # View the console output in real-time:
 docker logs --follow my-cool-app
 ```
-  
+&nbsp;
   
 ### exec running containers
 
@@ -86,7 +86,7 @@ You can get to a shell for a running container like this:
 ```bash
 docker exec -it my-cool-app bash
 ```
-  
+&nbsp;
   
 #### app-restart
 
@@ -96,18 +96,18 @@ to restart the container itself by running the provided command:
 ```bash
 app-restart
 ```
-  
+&nbsp;
   
 You can also restart the app from the host system directly:
 
 ```bash
 docker exec my-cool-app app-restart
 ```
-  
+&nbsp;
   
 This uses the restart functionality provided by [start_server](https://metacpan.org/pod/start_server)
   
-  
+&nbsp;
 #### stop-app
 
 You can also stop the app, while keeping the container running, with ```stop-app```:
@@ -115,14 +115,14 @@ You can also stop the app, while keeping the container running, with ```stop-app
 ```bash
 docker exec my-cool-app stop-app
 ```
-  
+&nbsp;
   
 The app will start back up as soon as you run ```app-restart```
 
 ```bash
 docker exec my-cool-app app-restart
 ```
-  
+&nbsp;
   
 ### init-stopped
 
@@ -137,30 +137,30 @@ rapi/psgi init-stopped
 
 docker exec my-cool-app app-restart
 ```
-  
+&nbsp;
   
 Starting the container with the ```init-stopped``` command is essentially the same as starting
 normally and then running ```stop-app```
   
-  
+&nbsp;
 ## Environment Variables
 
 Several special environment variables can be set to control system behavior, and
 others are set automatically to provide useful information to the application.
   
-  
+&nbsp;
 ### RAPI_PSGI_IGNORE_CPANFILE
 
 Set ```RAPI_PSGI_IGNORE_CPANFILE``` to true to ignore the 
 ```cpanfile``` if it exists
   
-  
+&nbsp;
 ### RAPI_PSGI_CPAN_NOTEST
 
 Set ```RAPI_PSGI_CPAN_NOTEST``` to true to install CPAN packages with
 ```cpanm -n``` to skip running tests when processing the ```cpanfile```
   
-  
+&nbsp;
 ### RAPI_PSGI_SET_SYSTEM_TIMEZONE
 
 Set ```RAPI_PSGI_SET_SYSTEM_TIMEZONE``` to a valid timezone name to change the system
@@ -173,7 +173,7 @@ docker create --name=my-cool-app -h my-cool-app \
   -e RAPI_PSGI_SET_SYSTEM_TIMEZONE="America/New_York"
 rapi/psgi
 ```
-  
+&nbsp;
   
 ### RAPI_PSGI_MIN_VERSION
 
@@ -186,11 +186,11 @@ docker create --name=my-cool-app -h my-cool-app \
   -e RAPI_PSGI_MIN_VERSION="1.1007" \
 rapi/psgi
 ```
-  
+&nbsp;
   
 Note: ```1.1007-C``` was the first version that this feature was enabled.
   
-  
+&nbsp;
 ### RAPI_PSGI_PORT
 
 TCP port to listen to. Defaults to ```5000``` which you should only change if you
@@ -200,7 +200,7 @@ use the ```-p|--port``` option in the ```docker run|create``` command:
 ```
  -p 5432:5000
 ```
-  
+&nbsp;
   
 ### RAPI_PSGI_START_SERVER_COMMAND
 
@@ -208,21 +208,21 @@ The command supplied to ```start_server``` (after ```--```). Defaults to ```plac
 
 See the [start_server](https://metacpan.org/pod/start_server) documentation for more info.
   
-  
+&nbsp;
 ### CATALYST_DEBUG
 
 Set ```CATALYST_DEBUG``` to true to enable verbose debug messages on the console.
 
 This is not specific to ```rapi/psgi``` but to Catalyst/RapidApp in general.
   
-  
+&nbsp;
 ### DBIC_TRACE
 
 Set ```DBIC_TRACE``` to true to enable dumping SQL statements on the console.
 
 This is not specific to ```rapi/psgi``` but to DBIx::Class/RapidApp in general.
   
-  
+&nbsp;
 ### DBIC_TRACE_PROFILE
 
 When ```DBIC_TRACE``` is enabled, set ```DBIC_TRACE_PROFILE=console``` for prettier
@@ -230,7 +230,7 @@ output of SQL statements.
 
 This is not specific to ```rapi/psgi``` but to DBIx::Class/RapidApp in general.
   
-  
+&nbsp;
 #### example
 
 ```bash
@@ -242,14 +242,14 @@ docker create --name=my-cool-app -h my-cool-app \
   -e CATALYST_DEBUG=1 -e DBIC_TRACE=1 -e DBIC_TRACE_PROFILE=console \
 rapi/psgi
 ```
-  
+&nbsp;
   
 ### RAPI_PSGI_IMAGE_VERSION
 
 This is an informational variable which contains the version/tag of the ```rapi/psgi```
 Docker Hub image
   
-  
+&nbsp;
 ### RAPI_PSGI_DOCKERIZED
 
 This value is always true (1) and is used by internal scripts to prevent executing certain
