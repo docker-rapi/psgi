@@ -2,7 +2,7 @@ FROM rapi/rapidapp:1.1007
 MAINTAINER Henry Van Styn <vanstyn@cpan.org>
 
 # This is manually updated when new tags are created
-ENV RAPI_PSGI_IMAGE_VERSION=1.1007-E
+ENV RAPI_PSGI_IMAGE_VERSION=1.1007-F
 
 # Install some misc useful Plack packages:
 RUN cpanm \
@@ -29,7 +29,9 @@ RUN ln -sf /rapi_psgi_control.pl /bin/via-git \
  && ln -sf /rapi_psgi_control.pl /bin/app-restart \
  && ln -sf /rapi_psgi_control.pl /bin/stop-app
 
-CMD ["/rapi_psgi_control.pl"]
+# This will exec rapi_psgi_control.pl when there are no arguments:
+ENTRYPOINT ["/entrypoint.pl"]
 
-# We're doing this last for faster rebuilds when only changing the script
+# We're doing this last for faster rebuilds when only changing the scripts
 COPY rapi_psgi_control.pl /
+COPY entrypoint.pl /
