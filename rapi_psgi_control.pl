@@ -7,6 +7,7 @@ use Path::Class qw/file dir/;
 use Time::HiRes qw/usleep/;
 use POSIX ":sys_wait_h";
 use RapidApp::Util ':all';
+use List::Util;
 
 
 $| = 1;
@@ -204,7 +205,25 @@ sub _normal_init {
     print " $lt -> $zonefile\n";
   
   }
+  
+  &_add_docker_host_to_hosts;
 }
+
+sub _add_docker_host_to_hosts {
+  my $hosts = file('/etc/hosts');
+  for my $line (split(/\n/,(scalar $hosts->slurp))) {
+    # Skip if there is already an entry:
+    return if ($line =~ /\s+docker-host$/ || $line =~ /\s+docker-host\s+/)
+  }
+  
+  my $routes = `ip route`;
+  if(my $gw_line = List::Util::first { /^default via / } split(/\n/,$routes)) {
+    if(my $ip = (split(/\s+/,$gw_line))[2]) {
+      qx|echo "$ip docker-host" >> /etc/hosts|;
+    }
+  }
+}
+
 
 
 BEGIN {

@@ -297,3 +297,16 @@ Docker Hub image
 This value is always true (1) and is used by internal scripts to prevent executing certain
 code/commands outside the context of this image. You can also use this value in your
 own code to do the same.
+
+&nbsp;
+## Misc
+
+### docker-host
+
+For convenience, the host name ```docker-host``` is automatically setup in ```/etc/hosts```
+pointing to the IP address of the default gateway (which is the docker host system). This
+allows apps to be able to reference ```docker-host``` and have it always mean the same
+thing. This is useful for setups which used to reference ```localhost``` for services like
+SMTP, etc. ```docker-host``` is the same concept, just always referencing the gateway.
+
+Available since ```1.1008-A```
