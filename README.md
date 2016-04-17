@@ -209,6 +209,48 @@ The command supplied to ```start_server``` (after ```--```). Defaults to ```plac
 See the [start_server](https://metacpan.org/pod/start_server) documentation for more info.
   
 &nbsp;
+### RAPI_PSGI_BACKGROUND_URL
+
+Optional url/path of the local app which will be called by the system automatically 
+every ```RAPI_PSGI_BACKGROUND_FREQUENCY``` seconds. This provides a simple, in-line
+way to have background code ran without needing to setup a separate ```cron```
+or other task scheduling system.
+
+For example, if your app had a controller action at ```/run_cron```, the following
+would have it automatically called every 5 minutes:
+
+```bash
+docker create --name=my-cool-app -h my-cool-app \
+  -it -p 5000:5000 -v /path/to/MyCoolApp:/opt/app \
+  -e RAPI_PSGI_BACKGROUND_URL='/run_cron' \
+  -e RAPI_PSGI_BACKGROUND_FREQUENCY=300 \
+rapi/psgi
+```
+&nbsp;
+
+Available since version ```1.1008```
+
+&nbsp;
+### RAPI_PSGI_BACKGROUND_FREQUENCY
+
+How often (in seconds) the ```RAPI_PSGI_BACKGROUND_URL```, if set, should be called. 
+Defaults to ```60``` (1 minute). 
+
+Note: the system will not start a new background request if the previous one is still
+running. See ```RAPI_PSGI_BACKGROUND_TIMEOUT``` below for the max time each request 
+is allowed to run for.
+
+&nbsp;
+### RAPI_PSGI_BACKGROUND_TIMEOUT
+
+Maximum time (in seconds) the background request to the ```RAPI_PSGI_BACKGROUND_URL```
+is allowed to run before being stopped/killed. Only 1 request is allowed to be ran
+at once, so if the previous request is still running, a new request won't be started
+even if ```RAPI_PSGI_BACKGROUND_FREQUENCY``` has elapsed. 
+
+Defaults to ```300``` (5 minutes)
+
+&nbsp;
 ### CATALYST_DEBUG
 
 Set ```CATALYST_DEBUG``` to true to enable verbose debug messages on the console.

@@ -5,6 +5,9 @@ use warnings;
 
 use Path::Class qw/file dir/;
 use Time::HiRes qw/usleep/;
+use POSIX ":sys_wait_h";
+use RapidApp::Util ':all';
+
 
 $| = 1;
 
@@ -116,15 +119,24 @@ if($bin_name eq 'init-stopped' && -f $stop_file) {
   );
 }
 
+my $BgReq = undef;
 while(1) {
+
+  $BgReq->DEMOLISH if ($BgReq);
+  $BgReq = undef;
 
   unless(-f $stop_file) {
     if(my $pid = fork) {
+
       local $SIG = $SIG;
+      
+      $BgReq = Bg::Req->new;
     
       for my $sig (@exit_sigs) {
         $SIG{$sig} = sub {
           print "\n\n  [caught SIG$sig -- shutting down]\n\n";
+          $BgReq->DEMOLISH if ($BgReq);
+          $BgReq = undef;
           kill $sig => $pid;
           waitpid( $pid, 0 );
           exit;
@@ -192,5 +204,161 @@ sub _normal_init {
     print " $lt -> $zonefile\n";
   
   }
-  
 }
+
+
+BEGIN {
+  package Bg::Req;
+  use Moo;
+  use Types::Standard ':all';
+  use RapidApp::Util ':all';
+  
+  use strict;
+  use warnings;
+  
+  use Time::HiRes qw/gettimeofday tv_interval/;
+  use LWP::UserAgent;
+  use POSIX ":sys_wait_h";
+  use Scalar::Util qw(looks_like_number);
+  
+  # Auto start:
+  sub BUILD { 
+    my $self = shift;
+    $self->checkup if ($self->url);
+  }
+  
+  has 'url', is => 'ro', lazy => 1, default => sub {
+    my $path = $ENV{RAPI_PSGI_BACKGROUND_URL} or return undef;
+    $path =~ /^\// or die "Bad RAPI_PSGI_BACKGROUND_URL '$path' - must start with '/'";
+    join('','http://localhost:',($ENV{RAPI_PSGI_PORT} ||= 5000),$path)
+  };
+  
+  my $PosInt = sub { die "$_[0] is not a positive integer" unless($_[0] =~ /^\d+$/ && $_[0] > 0) };
+  my %durs = (is => 'ro', isa => $PosInt, lazy => 1);
+  has 'frequency', default => sub { $ENV{RAPI_PSGI_BACKGROUND_FREQUENCY} ||= 60  }, %durs;
+  has 'timeout',   default => sub { $ENV{RAPI_PSGI_BACKGROUND_TIMEOUT}   ||= 300 }, %durs;
+  
+  has 'pid',        is => 'rw';
+  has 'started_at', is => 'rw';
+  
+  has 'ua', is => 'ro', lazy => 1, default => sub {
+    my $self = shift;
+    
+    my $ua = LWP::UserAgent->new;
+    $ua->timeout($self->timeout);
+    $ua->agent("rapi-psgi/$ENV{RAPI_PSGI_IMAGE_VERSION}");
+  
+    $ua
+  }, isa => InstanceOf['LWP::UserAgent'];
+  
+  sub allowed_to_run {
+    my $self = shift;
+    (! $self->{_is_child} && $self->url && ! -f $stop_file && -f $init_file)
+  }
+  
+  sub running {
+    my $self = shift;
+    $self->pid or return 0;
+    if (my $kid = waitpid($self->pid, WNOHANG)) {
+      $self->pid(undef);
+      return 0;
+    }
+    return 1;
+  }
+  
+  sub stop {
+    my $self = shift;
+    $self->running or return 0;
+    kill TERM => $self->pid;
+    sleep(0.1) if $self->running;
+    while($self->running) {
+      kill 9 => $self->pid;
+      sleep(0.1);
+    }
+    return 1
+  }
+  
+  sub start {
+    my $self = shift;
+    $self->stop;
+    
+    return unless $self->allowed_to_run;
+    
+    $self->started_at([gettimeofday]);
+    if(my $pid = fork) {
+      $self->pid($pid);
+      $self->checkup;
+    }
+    else {
+      ## ****   CHILD THREAD   **** ##
+      $self->{_is_child} = 1;
+      eval { alarm(0); delete $SIG{ALRM}; };
+      for my $sig (@exit_sigs) { $SIG{$sig} = sub { exit }; }
+      
+      my $pfx = join('',"   ++ ",(ref $self)," ($$) [",$self->url,']');
+      
+      print STDERR "\n$pfx --> GET REQUEST ... \n";
+      
+      my $response = $self->ua->get($self->url);
+      print STDERR join('',$pfx,': ',$response->status_line,' (',$self->elapsed,'s)',"\n");
+      
+      exit
+      ## ************************** ##
+    }
+  }
+  
+  sub elapsed {
+    my $self = shift;
+    my $t0 = $self->started_at or return undef;
+    sprintf('%.2f',tv_interval($t0))
+  }
+  
+  sub due_in {
+    my $self = shift;
+    my $due_in = int($self->frequency - ($self->elapsed||0) + 0.5) || 0;
+    $due_in > 1 ? $due_in : 2;
+  }
+  
+  sub checkup {
+    my $self = shift;
+    $self->url or return undef;
+    
+    return if ($self->{_is_child});
+    
+    eval { alarm(0) };
+    
+    $self->stop if (
+      $self->running &&
+      $self->elapsed > $self->timeout
+    );
+    
+    $self->start if (
+      ! $self->running &&
+      (! $self->elapsed || $self->elapsed > $self->frequency)
+    );
+    
+    $self->stop unless ($self->allowed_to_run);
+    
+    $SIG{ALRM} = sub { $self->checkup };
+    
+    alarm( $self->due_in )
+  }
+  
+  sub DEMOLISH {
+    my $self = shift;
+    return if ($self->{_is_child});
+    eval { alarm(0); delete $SIG{ALRM} };
+    $self->stop;
+  }
+  
+  sub _debug_info {
+    my $self = shift;
+    my $meths = shift || [qw/pid started_at running elapsed allowed_to_run timeout due_in/];
+    return { _self => $self, map { $_ => $self->$_ } sort @$meths }
+  }
+  
+  my $fn = __PACKAGE__; $fn =~ s/::/\//g; $fn .= '.pm';
+  $INC{$fn} = __FILE__;
+  1;
+}
+

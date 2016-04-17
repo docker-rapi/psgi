@@ -1,8 +1,8 @@
-FROM rapi/rapidapp:1.1007
+FROM rapi/rapidapp:1.1008
 MAINTAINER Henry Van Styn <vanstyn@cpan.org>
 
 # This is manually updated when new tags are created
-ENV RAPI_PSGI_IMAGE_VERSION=1.1007-F
+ENV RAPI_PSGI_IMAGE_VERSION=1.1008
 
 # Install some misc useful Plack packages:
 RUN cpanm \
