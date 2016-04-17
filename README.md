@@ -310,3 +310,12 @@ thing. This is useful for setups which used to reference ```localhost``` for ser
 SMTP, etc. ```docker-host``` is the same concept, just always referencing the gateway.
 
 Available since ```1.1008-A```
+
+&nbsp;
+### rapi-install-extras
+
+Starting in version ```1.1008-B``` official 'extras' are now available but are not installed
+to the base image, but can be installed in either a runniong container or a downstream image
+by running the ```rapi-install-extras``` command. These are extra packages and commands which
+I find useful (nmap, tcpdump, etc) but aren't pre-installed in order to save image space. The
+list of extras changes with the image version just like the Dockerfile does
