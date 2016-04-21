@@ -173,6 +173,7 @@ sub _workdir_is_empty {
 
 sub _normal_init {
 
+  unlink $init_file if (-f $init_file && $$ == 1);
   die "$bin_name cannot be ran in an existing container" if (-f $init_file);
   
   $init_file->touch;
