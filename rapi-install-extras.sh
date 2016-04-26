@@ -35,6 +35,8 @@ apt-get update && apt-get install -y \
   dnsutils \
   nmap \
   tcpdump \
+  psmisc \
+  vim \
 && rm -fr /var/lib/apt/lists/* \
 && touch $touch_file
 

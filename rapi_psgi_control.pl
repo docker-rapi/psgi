@@ -120,6 +120,11 @@ if($bin_name eq 'init-stopped' && -f $stop_file) {
   );
 }
 
+# Install a generic process reaper if we're PID 1
+if ($$ == 1) {
+  $SIG{CHLD} = sub { 1 until waitpid(-1 , WNOHANG) == -1 };
+}
+
 my $BgReq = undef;
 while(1) {
 
