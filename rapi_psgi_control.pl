@@ -212,10 +212,6 @@ sub _normal_init {
     
     # We also need to update the timezone file
     qx|echo "$tz" > /etc/timezone|;
-    
-    # Also set the TZ env variable unless it has already been set. This is the first
-    # place stuff like DateTime looks to get the local time_zone and is fastest
-    $ENV{TZ} ||= $tz;
   }
   
   &_add_docker_host_to_hosts;

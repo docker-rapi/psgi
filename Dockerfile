@@ -1,8 +1,8 @@
-FROM rapi/rapidapp:1.1008
+FROM rapi/rapidapp:1.1100
 MAINTAINER Henry Van Styn <vanstyn@cpan.org>
 
 # This is manually updated when new tags are created
-ENV RAPI_PSGI_IMAGE_VERSION=1.1008-F
+ENV RAPI_PSGI_IMAGE_VERSION=1.1100
 
 # Install some misc useful Plack packages:
 RUN cpanm \
@@ -41,3 +41,6 @@ ENTRYPOINT ["/entrypoint.pl"]
 COPY rapi_psgi_control.pl /
 COPY entrypoint.pl /
 COPY rapi-install-extras.sh /
+
+# Make sure the scripts are executable
+RUN chmod ugo+x /*.pl /*.sh
