@@ -37,6 +37,7 @@ apt-get update && apt-get install -y \
   tcpdump \
   psmisc \
   vim \
+  socat \
 && rm -fr /var/lib/apt/lists/* \
 && touch $touch_file
 

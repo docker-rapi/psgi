@@ -251,6 +251,43 @@ even if ```RAPI_PSGI_BACKGROUND_FREQUENCY``` has elapsed.
 Defaults to ```300``` (5 minutes)
 
 &nbsp;
+### RAPI_PSGI_BACKGROUND_LOG
+
+Optional path to log the results of the background requests to, if 
+```RAPI_PSGI_BACKGROUND_URL``` is set. Path will be relative to the app root 
+```/opt/app``` unless an absolute path is supplied (relative to the container 
+filesystem). Log file will be automatically managed and rotated using 
+[Log::Dispatch::FileRotate](https://metacpan.org/pod/Log::Dispatch::FileRotate)
+
+Default is unset which means not to log.
+
+Available since ```1.1100-A```
+
+&nbsp;
+### RAPI_PSGI_BACKGROUND_LOG_OPTS
+
+Optional extra options to pass to the ```Log::Dispatch::FileRotate``` constructor
+when ```RAPI_PSGI_BACKGROUND_LOG``` is set. Value should be supplied as string 
+eval-able to a Perl HashRef. For example:
+
+```
+ -e RAPI_PSGI_BACKGROUND_LOG_OPTS='{ size=>1024*1024*10, max=>10, min_level=>"info" }'
+```
+
+The default options are:
+
+```
+   filename  => $ENV{RAPI_PSGI_BACKGROUND_LOG},
+   mode      => 'append',
+   name      => 'bgreq',
+   min_level => 'debug',
+   size      => 1024*1024*50,
+   max       => 6,
+```
+
+See [Log::Dispatch::FileRotate#METHODS](https://metacpan.org/pod/Log::Dispatch::FileRotate#METHODS)
+
+&nbsp;
 ### CATALYST_DEBUG
 
 Set ```CATALYST_DEBUG``` to true to enable verbose debug messages on the console.

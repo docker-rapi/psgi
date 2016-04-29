@@ -8,7 +8,7 @@ use Time::HiRes qw/usleep/;
 use POSIX ":sys_wait_h";
 use RapidApp::Util ':all';
 use List::Util;
-
+use Log::Dispatch::FileRotate;
 
 $| = 1;
 
@@ -247,11 +247,17 @@ BEGIN {
   use LWP::UserAgent;
   use POSIX ":sys_wait_h";
   use Scalar::Util qw(looks_like_number);
+  use Path::Class qw(file dir);
+  use DateTime;
   
   # Auto start:
   sub BUILD { 
     my $self = shift;
-    $self->checkup if ($self->url);
+    if ($self->url) {
+      print join('',"** Setting up ",__PACKAGE__," for ",$self->url,"\n");
+      $self->logger;
+      $self->checkup;
+    }
   }
   
   has 'url', is => 'ro', lazy => 1, default => sub {
@@ -277,6 +283,41 @@ BEGIN {
   
     $ua
   }, isa => InstanceOf['LWP::UserAgent'];
+  
+  has 'logger_opts', is => 'ro', lazy => 1, default => sub {
+    my $self = shift;
+    my $ref = eval($ENV{RAPI_PSGI_BACKGROUND_LOG_OPTS} || '{}');
+    ref($ref)||'' eq 'HASH' ? $ref : $ENV{RAPI_PSGI_BACKGROUND_LOG_OPTS}
+  }, isa => HashRef;
+  
+  has 'logger', is => 'ro', lazy => 1, default => sub {
+    my $self = shift;
+    $self->url or return undef;
+    my $fn = $ENV{RAPI_PSGI_BACKGROUND_LOG} or return undef;
+    
+    # relative to app dir if not absolute
+    $fn = "/opt/app/$fn" unless ($fn =~ /^\//);
+    
+    my $File = file($fn)->absolute;
+    -d $File->parent || $File->parent->mkpath(1);
+    
+    Log::Dispatch::FileRotate->new(
+      min_level => 'debug',
+      name      => 'bgreq',
+      filename  => $File->stringify,
+      mode      => 'append' ,
+      size      => 1024*1024*50,
+      max       => 6,
+      %{ $self->logger_opts }
+    )
+  
+  }, isa => Maybe[InstanceOf['Log::Dispatch::FileRotate']];
+  
+  sub msg {
+    my ($self, $msg, $level) = @_;
+    print STDERR $msg;
+    $self->logger and $self->logger->log( message => $msg, level => $level || 'info' );
+  }
   
   sub allowed_to_run {
     my $self = shift;
@@ -322,13 +363,30 @@ BEGIN {
       eval { alarm(0); delete $SIG{ALRM}; };
       for my $sig (@exit_sigs) { $SIG{$sig} = sub { exit }; }
       
-      my $pfx = join('',"   ++ ",(ref $self)," ($$) [",$self->url,']');
+      my $pfx = join('',"++ ",(ref $self)," ($$) [",$self->url,']');
       
-      print STDERR "\n$pfx --> GET REQUEST ... \n";
+      $self->msg(join('',"\n",
+        '[', DateTime->now( time_zone => 'local' )->strftime('%a, %d %b %Y %H:%M:%S %z'),']'
+      )) if ($self->logger);
+      
+      $self->msg("\n$pfx --> GET REQUEST ... \n");
       
       my $response = $self->ua->get($self->url);
-      print STDERR join('',$pfx,': ',$response->status_line,' (',$self->elapsed,'s)',"\n");
       
+      $self->logger->log(
+        level   => 'debug',
+        message => join("",
+          "RESPONSE - ",$response->status_line,
+          ($response->is_success ? (' (',length($response->decoded_content),' bytes)') : ()),
+          ' - ',$self->elapsed, ' seconds',
+          "\n",
+          ('-' x 50),"\n",
+          $response->decoded_content,"\n",
+          ('-' x 50),"\n"
+      )) if ($self->logger);
+      
+      $self->msg(join('',$pfx,': ',$response->status_line,' (',$self->elapsed,'s)',"\n\n"));
+        
       exit
       ## ************************** ##
     }

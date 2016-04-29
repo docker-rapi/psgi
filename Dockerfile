@@ -2,12 +2,13 @@ FROM rapi/rapidapp:1.1100
 MAINTAINER Henry Van Styn <vanstyn@cpan.org>
 
 # This is manually updated when new tags are created
-ENV RAPI_PSGI_IMAGE_VERSION=1.1100
+ENV RAPI_PSGI_IMAGE_VERSION=1.1100-A
 
 # Install some misc useful Plack packages:
 RUN cpanm \
  Plack::Middleware::Headers \
  Plack::Middleware::TemplateToolkit \
+ Log::Dispatch::FileRotate \
 && rm -rf .cpanm/
 
 RUN mkdir -p /opt/app \
