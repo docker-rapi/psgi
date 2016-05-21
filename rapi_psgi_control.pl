@@ -57,10 +57,16 @@ elsif($bin_name eq 'app-restart') {
   if(-f $stop_file) {
     print "App is stopped -- attempting start back up ...";
     $stop_file->remove;
-    usleep(250*1000) and print '.' until(-f $pid_file); # 250 ms
-    my $pid = file($pid_file)->slurp;
-    chomp($pid);
-    print " started [pid: $pid]\n";
+    usleep(250*1000) and print '.' until(-f $pid_file || -f $stop_file); # 250 ms
+    if(-f $pid_file) {
+      my $pid = file($pid_file)->slurp;
+      chomp($pid);
+      print " started [pid: $pid]\n";
+    }
+    else {
+      # If the stop_file was re-created it means the app refused to start
+      print "\nstart-up failed - check docker container logs for more info.\n";
+    }
     exit;
   }
 
@@ -83,28 +89,8 @@ else {
 
 &_normal_init;
 
-
-if(! -f 'app.psgi' && ! $ENV{RAPI_PSGI_START_SERVER_COMMAND}) {
-  &_workdir_is_empty 
-    ? die 'app dir is empty (did you forget \'--volume=$(pwd):/opt/app\' in docker run command?)'."\n"
-    : die "Error: No app.psgi file found; nothing to plackup.\n"
-}
-
-# If cpanfile is found, try to install missing deps before plackup:
-if(-f 'cpanfile' && !$ENV{RAPI_PSGI_IGNORE_CPANFILE}) {
-  print "\n** Processing cpanfile:";
-  my $cmd = $ENV{RAPI_PSGI_CPAN_NOTEST} 
-    ? 'cpanm -n --installdeps .'
-    : 'cpanm --installdeps .';
-  print "  -> `$cmd`\n\n";
-  qx|$cmd 1>&2|;
-  if(my $exit = $? >> 8) {
-    print "\nError: command `$cmd` non-zero exit code ($exit) -- bailing out to shell...\n";
-    exec('/bin/bash');
-  }
-}
-
 $ENV{RAPI_PSGI_PORT} ||= 5000;
+my $custom_start_cmd = $ENV{RAPI_PSGI_START_SERVER_COMMAND};
 $ENV{RAPI_PSGI_START_SERVER_COMMAND} ||= 'plackup -s Gazelle';
 my @server_cmd = split(/\s+/,$ENV{RAPI_PSGI_START_SERVER_COMMAND});
 
@@ -163,7 +149,7 @@ while(1) {
       waitpid( $pid, 0 );
     }
     else {
-      exec @start => '--port', $ENV{RAPI_PSGI_PORT}, '--', @server_cmd;
+      &_exec_startup;
     }
   }
   sleep 2;
@@ -171,12 +157,57 @@ while(1) {
 
 ####
 
+sub _exec_startup {
+
+  print "\nStarting up app server...\n";
+
+  if( &_pre_start() ) {
+    exec @start => '--port', $ENV{RAPI_PSGI_PORT}, '--', @server_cmd;
+  }
+  else {
+    # If the pre-start failed, set the app to stopped
+    $stop_file->touch;
+    warn "\n ** app has not been started -- run 'app-restart' to start **\n\n";
+  }
+}
+
+sub _pre_start {
+
+  if(! -f 'app.psgi' && !$custom_start_cmd) {
+    &_workdir_is_empty 
+      ? warn 'app dir is empty (did you forget \'--volume=$(pwd):/opt/app\' in docker run command?)'."\n"
+      : warn "Error: No app.psgi file found; nothing to plackup.\n";
+      
+    return 0;
+  }
+  
+  # If cpanfile is found, try to install missing deps before plackup:
+  if(-f 'cpanfile' && !$ENV{RAPI_PSGI_IGNORE_CPANFILE}) {
+    print "\n** Processing cpanfile:";
+    my $cmd = $ENV{RAPI_PSGI_CPAN_NOTEST} 
+      ? 'cpanm -n --installdeps .'
+      : 'cpanm --installdeps .';
+    print "  -> `$cmd`\n\n";
+    local $SIG{CHLD} = 'DEFAULT';
+    qx|$cmd 1>&2|;
+    if(my $exit = $? >> 8) {
+      warn "\nError: command `$cmd` non-zero exit code ($exit) -- aborting start-up\n";
+      return 0;
+    }
+  }
+  
+  return 1;
+}
+
+
 sub _workdir_is_empty {
   my @glob = grep { $_ ne '.' && $_ ne '..' } glob(".* *");
   scalar(@glob) == 0
 }
 
 sub _normal_init {
+
+  local $SIG{CHLD} = 'DEFAULT';
 
   unlink $init_file if (-f $init_file && $$ == 1);
   die "$bin_name cannot be ran in an existing container" if (-f $init_file);
