@@ -76,10 +76,10 @@ elsif($bin_name eq 'app-restart') {
   # on the TCP port after the restart
   #exec @start => '--restart';
   
-  # Instead, just kill (term) and allow it to be restarted automatically
-  my $pid = file($pid_file)->slurp;
-  chomp($pid);
-  exec "kill $pid";
+  # Instead, just call stop, but don't touch the $stop_file so the parent
+  # will start it back up automatically
+  print "App is running -- attempting to stop (will restart automatically)...\n";
+  exec @start => '--stop';
 }
 elsif($bin_name eq 'stop-app') {
   -f $pid_file or die "app hasn't been started yet (no $pid_file)\n";
