@@ -2,7 +2,13 @@ FROM rapi/rapidapp:1.2000
 MAINTAINER Henry Van Styn <vanstyn@cpan.org>
 
 # This is manually updated when new tags are created
-ENV RAPI_PSGI_IMAGE_VERSION=1.2000
+ENV RAPI_PSGI_IMAGE_VERSION=1.2000-A
+
+# Install some specific pre-req packages without tests
+# (because they are currently known broken on CPAN):
+RUN cpanm --notest \
+ Date::Manip \
+&& rm -rf .cpanm/
 
 # Install some misc useful Plack packages:
 RUN cpanm \

@@ -71,7 +71,15 @@ elsif($bin_name eq 'app-restart') {
   }
 
   -f $pid_file or die "app hasn't been started yet (no $pid_file)\n";
-  exec @start => '--restart';
+  
+  # Calling this is sometimes leaving the app unable to communicate 
+  # on the TCP port after the restart
+  #exec @start => '--restart';
+  
+  # Instead, just kill (term) and allow it to be restarted automatically
+  my $pid = file($pid_file)->slurp;
+  chomp($pid);
+  exec "kill $pid";
 }
 elsif($bin_name eq 'stop-app') {
   -f $pid_file or die "app hasn't been started yet (no $pid_file)\n";
@@ -108,7 +116,7 @@ if($bin_name eq 'init-stopped' && -f $stop_file) {
 
 # Install a generic process reaper if we're PID 1
 if ($$ == 1) {
-  $SIG{CHLD} = sub { 1 until waitpid(-1 , WNOHANG) == -1 };
+  $SIG{CHLD} = sub { sleep(1) until waitpid(-1 , WNOHANG) == -1 };
 }
 
 my $BgReq = undef;
