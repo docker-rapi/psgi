@@ -98,6 +98,8 @@ else {
 &_normal_init;
 
 $ENV{RAPI_PSGI_PORT} ||= 5000;
+$ENV{RAPI_PSGI_WORKER_RESTART_RATE} ||= 10;
+
 my $custom_start_cmd = $ENV{RAPI_PSGI_START_SERVER_COMMAND};
 $ENV{RAPI_PSGI_START_SERVER_COMMAND} ||= 'plackup -s Gazelle';
 my @server_cmd = split(/\s+/,$ENV{RAPI_PSGI_START_SERVER_COMMAND});
@@ -170,7 +172,10 @@ sub _exec_startup {
   print "\nStarting up app server...\n";
 
   if( &_pre_start() ) {
-    exec @start => '--port', $ENV{RAPI_PSGI_PORT}, '--', @server_cmd;
+    exec @start => 
+      '--port'     => $ENV{RAPI_PSGI_PORT},
+      '--interval' => $ENV{RAPI_PSGI_WORKER_RESTART_RATE}, 
+      '--'         => @server_cmd;
   }
   else {
     # If the pre-start failed, set the app to stopped

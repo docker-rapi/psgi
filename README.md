@@ -201,7 +201,16 @@ use the ```-p|--port``` option in the ```docker run|create``` command:
  -p 5432:5000
 ```
 &nbsp;
-  
+### RAPI_PSGI_WORKER_RESTART_RATE
+
+Seconds to wait to auto-restart the app if it exits. This is the ```--interval``` 
+option supplied to the [start_server](https://metacpan.org/pod/start_server) command. 
+
+Defaults to ```10```
+
+Available since version ```1.2000-C```
+
+&nbsp;
 ### RAPI_PSGI_START_SERVER_COMMAND
 
 The command supplied to ```start_server``` (after ```--```). Defaults to ```plackup -s Gazelle```.
