@@ -2,7 +2,7 @@ FROM rapi/rapidapp:1.2000
 MAINTAINER Henry Van Styn <vanstyn@cpan.org>
 
 # This is manually updated when new tags are created
-ENV RAPI_PSGI_IMAGE_VERSION=1.2000-C
+ENV RAPI_PSGI_IMAGE_VERSION=1.2000-D
 
 # Install some specific pre-req packages without tests
 # (because they are currently known broken on CPAN):
@@ -48,6 +48,7 @@ ENTRYPOINT ["/entrypoint.pl"]
 COPY rapi_psgi_control.pl /
 COPY entrypoint.pl /
 COPY rapi-install-extras.sh /
+COPY bashrc /root/.bashrc
 
 # Make sure the scripts are executable
 RUN chmod ugo+x /*.pl /*.sh
