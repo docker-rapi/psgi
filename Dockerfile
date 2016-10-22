@@ -1,8 +1,8 @@
-FROM rapi/rapidapp:1.2000
+FROM rapi/rapidapp:1.2100
 MAINTAINER Henry Van Styn <vanstyn@cpan.org>
 
 # This is manually updated when new tags are created
-ENV RAPI_PSGI_IMAGE_VERSION=1.2000-D
+ENV RAPI_PSGI_IMAGE_VERSION=1.2100
 
 # Install some specific pre-req packages without tests
 # (because they are currently known broken on CPAN):
