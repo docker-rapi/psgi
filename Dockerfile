@@ -1,8 +1,8 @@
-FROM rapi/rapidapp:1.2100
+FROM rapi/rapidapp:1.3000
 MAINTAINER Henry Van Styn <vanstyn@cpan.org>
 
 # This is manually updated when new tags are created
-ENV RAPI_PSGI_IMAGE_VERSION=1.2100
+ENV RAPI_PSGI_IMAGE_VERSION=1.3000
 
 # Install some specific pre-req packages without tests
 # (because they are currently known broken on CPAN):
@@ -23,7 +23,9 @@ RUN mkdir -p /opt/app \
 VOLUME  /opt/app
 WORKDIR /opt/app
 
-EXPOSE 3000 3500 5000
+# No longer expose ports by default 
+#  -- expect use '-p' or EXPOSE in downstream images
+#EXPOSE 3000 3500 5000
 
 # env flag used by CMD script to prevent running except from here
 ENV RAPI_PSGI_DOCKERIZED 1
