@@ -2,11 +2,11 @@ FROM rapi/rapidapp:1.3001
 MAINTAINER Henry Van Styn <vanstyn@cpan.org>
 
 # This is manually updated when new tags are created
-ENV RAPI_PSGI_IMAGE_VERSION=1.3001-A
+ENV RAPI_PSGI_IMAGE_VERSION=1.3001-B
 
-# Install Rapi::Blog 1.0000
+# Install Rapi::Blog 1.0001
 RUN cpanm \
- http://www.cpan.org/authors/id/V/VA/VANSTYN/Rapi-Blog-1.0000.tar.gz \
+ http://www.cpan.org/authors/id/V/VA/VANSTYN/Rapi-Blog-1.0001.tar.gz \
 && rm -rf .cpanm/
 
 # Install some specific pre-req packages without tests
