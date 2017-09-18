@@ -2,18 +2,15 @@ FROM rapi/rapidapp:1.3002
 MAINTAINER Henry Van Styn <vanstyn@cpan.org>
 
 # This is manually updated when new tags are created
-ENV RAPI_PSGI_IMAGE_VERSION=1.3002
+ENV RAPI_PSGI_IMAGE_VERSION=1.3003
 
-# Install Rapi::Blog 1.0004
-RUN cpanm \
- http://www.cpan.org/authors/id/V/VA/VANSTYN/Rapi-Blog-1.0004.tar.gz \
-&& rm -rf .cpanm/
 
-# Install some specific pre-req packages without tests
+# Install some specific pre-req packages without tests (update -- removed to test if fixed)
 # (because they are currently known broken on CPAN):
-RUN cpanm --notest \
- Date::Manip \
-&& rm -rf .cpanm/
+#RUN cpanm --notest \
+# Date::Manip \
+#&& rm -rf .cpanm/
+
 
 # Install some misc useful Plack packages:
 RUN cpanm \
@@ -21,6 +18,14 @@ RUN cpanm \
  Plack::Middleware::TemplateToolkit \
  Log::Dispatch::FileRotate \
 && rm -rf .cpanm/
+
+
+# Install RapidApp 1.3003 and Rapi::Blog 1.0100 
+RUN cpanm \
+ http://www.cpan.org/authors/id/V/VA/VANSTYN/RapidApp-1.3003.tar.gz \
+ http://www.cpan.org/authors/id/V/VA/VANSTYN/Rapi-Blog-1.0100.tar.gz \
+&& rm -rf .cpanm/
+
 
 RUN mkdir -p /opt/app \
  && mkdir -p /opt/misc
