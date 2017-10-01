@@ -297,6 +297,15 @@ The default options are:
 See [Log::Dispatch::FileRotate#METHODS](https://metacpan.org/pod/Log::Dispatch::FileRotate#METHODS)
 
 &nbsp;
+### RAPI_PSGI_FAST_EXIT
+
+When set to true, the control script will exit immediately upon receiving a quit signal and not
+wait for the worker threads to terminate cleanly. Useful when doing development and wanting
+Ctrl-C to exit quickly, or if the app is known to have no needed cleanup. Defaults to false.
+
+Available since ```1.3004```
+
+&nbsp;
 ### CATALYST_DEBUG
 
 Set ```CATALYST_DEBUG``` to true to enable verbose debug messages on the console.

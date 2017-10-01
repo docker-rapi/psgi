@@ -136,7 +136,11 @@ while(1) {
     
       for my $sig (@exit_sigs) {
         $SIG{$sig} = sub {
-          print "\n\n  [caught SIG$sig -- shutting down]\n\n";
+          if($ENV{RAPI_PSGI_FAST_EXIT}) {
+            print "\n\n  [rapi/psgi: caught SIG$sig, fast exiting -- RAPI_PSGI_FAST_EXIT is set]\n\n";
+            exit;
+          }
+          print "\n\n  [rapi/psgi: caught SIG$sig -- shutting down]\n\n";
           $BgReq->DEMOLISH if ($BgReq);
           $BgReq = undef;
           kill $sig => $pid;
