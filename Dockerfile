@@ -1,8 +1,8 @@
-FROM rapi/rapidapp:1.3105
+FROM rapi/rapidapp:1.3106
 MAINTAINER Henry Van Styn <vanstyn@cpan.org>
 
 # This is manually updated when new tags are created
-ENV RAPI_PSGI_IMAGE_VERSION=1.3105
+ENV RAPI_PSGI_IMAGE_VERSION=1.3106
 
 # Install some misc useful Plack packages:
 RUN cpanm \
@@ -11,9 +11,9 @@ RUN cpanm \
  Log::Dispatch::FileRotate \
 && rm -rf .cpanm/
 
-# Install Rapi::Blog 1.1001 and Rapi::Fs 1.104
+# Install Rapi::Blog 1.1002 and Rapi::Fs 1.104
 RUN cpanm \
- http://www.cpan.org/authors/id/V/VA/VANSTYN/Rapi-Blog-1.1001.tar.gz \
+ http://www.cpan.org/authors/id/V/VA/VANSTYN/Rapi-Blog-1.1002.tar.gz \
  http://www.cpan.org/authors/id/V/VA/VANSTYN/Rapi-Fs-1.104.tar.gz \
 && rm -rf .cpanm/
 
