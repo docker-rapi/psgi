@@ -2,7 +2,7 @@ FROM rapi/rapidapp:1.3302
 MAINTAINER Henry Van Styn <vanstyn@cpan.org>
 
 # This is manually updated when new tags are created
-ENV RAPI_PSGI_IMAGE_VERSION=1.3302-A
+ENV RAPI_PSGI_IMAGE_VERSION=1.3302-B
 
 # Install some misc useful Plack packages:
 RUN cpanm \
@@ -51,6 +51,8 @@ ENTRYPOINT ["/entrypoint.pl"]
 COPY rapi_psgi_control.pl /
 COPY entrypoint.pl /
 COPY rapi-install-extras.sh /
+COPY common_env.pl /
+COPY print_bashrc_eval.pl /
 COPY bashrc /root/.bashrc
 
 # Make sure the scripts are executable
