@@ -31,6 +31,9 @@ WORKDIR /opt/app
 # env flag used by CMD script to prevent running except from here
 ENV RAPI_PSGI_DOCKERIZED 1
 
+# Make Gazelle the default plack server for plackup
+ENV PLACK_SERVER=Gazelle
+
 # Alias/symlink to allow calling different commands using docker run/exec ...
 # we are creating the symlinks before copying the actual file to avoid
 # the need to re-run this step after a simple change to the script
