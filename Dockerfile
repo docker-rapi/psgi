@@ -2,11 +2,11 @@ FROM rapi/rapidapp:1.3400
 MAINTAINER Henry Van Styn <vanstyn@cpan.org>
 
 # This is manually updated when new tags are created
-ENV RAPI_PSGI_IMAGE_VERSION=1.3402
+ENV RAPI_PSGI_IMAGE_VERSION=1.3404
 
-# Install RapidApp 1.3402 manually for now:
+# Install RapidApp 1.3404 manually for now:
 RUN cpanm \
- http://www.cpan.org/authors/id/V/VA/VANSTYN/RapidApp-1.3402.tar.gz \
+ http://www.cpan.org/authors/id/V/VA/VANSTYN/RapidApp-1.3404.tar.gz \
 && rm -rf .cpanm/
 
 # Install some misc useful Plack packages:
@@ -65,3 +65,11 @@ COPY bashrc /root/.bashrc
 
 # Make sure the scripts are executable
 RUN chmod ugo+x /*.pl /*.sh
+
+
+## docker-build command refernce:
+#
+# time docker build -t rapi/psgi .
+# docker tag rapi/psgi rapi/psgi:1.3404
+# docker push rapi/psgi
+#
